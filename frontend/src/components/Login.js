@@ -1,22 +1,41 @@
 import React, { useState } from 'react';
-import axios from 'axios';
 
 function Login({ onLogin }) {
   const [email, setEmail] = useState('user@mail.ru');
   const [password, setPassword] = useState('user123');
   const [error, setError] = useState('');
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = (e) => {
     e.preventDefault();
-    try {
-      const response = await axios.post('/login', { email, password });
-      if (response.data.success) {
-        onLogin(response.data.user);
-      } else {
-        setError('Ошибка входа');
-      }
-    } catch (err) {
-      setError('Сервер не отвечает. Запустили ли вы бэкенд? (node server.js)');
+    setError('');
+    
+    // Проверка прямо в компоненте без запросов
+    const users = [
+      { id: 1, email: 'admin@mail.ru', password: 'admin123', role: 'admin', name: 'Администратор' },
+      { id: 2, email: 'trainer@mail.ru', password: 'trainer123', role: 'trainer', name: 'Иван Тренеров' },
+      { id: 3, email: 'user@mail.ru', password: 'user123', role: 'user', name: 'Петр Посетитель' }
+    ];
+    
+    const user = users.find(u => u.email === email && u.password === password);
+    
+    if (user) {
+      // Сохраняем в localStorage для имитации сессии
+      localStorage.setItem('sportUser', JSON.stringify({
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        role: user.role
+      }));
+      
+      // Передаем данные в App.js
+      onLogin({
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        role: user.role
+      });
+    } else {
+      setError('Неверный email или пароль');
     }
   };
 
@@ -24,9 +43,9 @@ function Login({ onLogin }) {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-green-50">
       <div className="bg-white p-8 rounded-2xl shadow-xl w-96">
         <h1 className="text-3xl font-bold text-center text-gray-800 mb-2">
-          СпортКомплекс
+          🏋️ СпортКомплекс
         </h1>
-        <p className="text-center text-gray-600 mb-8">Войдите в систему</p>
+        <p className="text-center text-gray-600 mb-8">Демо-версия (работает офлайн)</p>
         
         <form onSubmit={handleSubmit} className="space-y-6">
           <div>
@@ -66,16 +85,27 @@ function Login({ onLogin }) {
           <div className="space-y-4">
             <button
               type="submit"
-              className="w-full bg-blue-600 text-white py-3 rounded-lg font-medium hover:bg-blue-700 transition"
+              className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-3 rounded-lg font-medium hover:opacity-90 transition shadow-md"
             >
-              Войти
+              Войти в демо-режим
             </button>
 
-            <div className="text-sm text-gray-600 text-center">
-              <p>Тестовые аккаунты:</p>
-              <p>Админ: admin@mail.ru / admin123</p>
-              <p>Тренер: trainer@mail.ru / trainer123</p>
-              <p>Пользователь: user@mail.ru / user123</p>
+            <div className="text-sm text-gray-600 text-center space-y-2">
+              <p className="font-bold text-gray-800">Тестовые аккаунты:</p>
+              <div className="grid grid-cols-1 gap-1">
+                <div className="p-2 bg-blue-50 rounded">
+                  <span className="font-medium">Админ:</span> admin@mail.ru / admin123
+                </div>
+                <div className="p-2 bg-green-50 rounded">
+                  <span className="font-medium">Тренер:</span> trainer@mail.ru / trainer123
+                </div>
+                <div className="p-2 bg-purple-50 rounded">
+                  <span className="font-medium">Пользователь:</span> user@mail.ru / user123
+                </div>
+              </div>
+              <p className="mt-4 text-green-600 font-medium">
+                ✅ Полностью офлайн • Не требует сервера
+              </p>
             </div>
           </div>
         </form>
